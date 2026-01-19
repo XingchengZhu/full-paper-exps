@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
-from utils.data import iCIFAR10, iCIFAR100,tinyiImageNet,Imagenetsubset
+from utils.data import iCIFAR10, iCIFAR100,tinyiImageNet,Imagenetsubset,baosteel,neucls,pcb
 
 
 class DataManager(object):
@@ -141,7 +141,7 @@ class DummyDataset(Dataset):
         self.args = args
         self.mode = mode
         if self.mode == 'train':
-            if self.args["dataset"] == "cifar100":
+            if self.args["dataset"] in ["cifar100","cifar10","baosteel","neucls","pcb"]:
                 size = 32
                 normalize=transforms.Normalize(mean=[0.5071, 0.4867, 0.4408], std=[0.2675, 0.2565, 0.2761])
             else :
@@ -189,6 +189,12 @@ def _get_idata(dataset_name):
         return tinyiImageNet() 
     elif name == "imagenetsubset":
         return Imagenetsubset()
+    elif name == "baosteel":
+        return baosteel()
+    elif name == "neucls":
+        return neucls()
+    elif name == "pcb":
+        return pcb()
     else:
         raise NotImplementedError("Unknown dataset {}.".format(dataset_name))
 
