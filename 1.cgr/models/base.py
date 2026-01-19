@@ -77,13 +77,13 @@ class BaseLearner(object):
             decimals=2,
         )
 
-        # ================= NEW: Compute per-task accuracy =================
+        # =================【新增部分开始】=================
+        # 计算每个任务的独立准确率
         init_cls = self.args["init_cls"]
         increment = self.args["increment"]
         task_accs = []
         
         # --- Task 0 ---
-        # 范围: [0, init_cls)
         t0_end = init_cls
         t0_idx = np.where(np.logical_and(y_true >= 0, y_true < t0_end))[0]
         if len(t0_idx) > 0:
@@ -92,10 +92,7 @@ class BaseLearner(object):
         else:
             task_accs.append(0.0)
 
-        # --- Subsequent Tasks ---
-        # 范围: [init_cls, init_cls+inc), [init_cls+inc, init_cls+2*inc), ...
-        # 直到覆盖 self._total_classes (当前已知的总类别数)
-        # 注意：这里计算的是当前模型在其“认识”的所有任务上的表现
+        # --- 后续任务 ---
         curr = t0_end
         while curr < self._total_classes:
             end = min(curr + increment, self._total_classes)
@@ -108,7 +105,7 @@ class BaseLearner(object):
             curr = end
             
         ret["task_acc"] = task_accs
-        # ==================================================================
+        # =================【新增部分结束】=================
 
         return ret
 

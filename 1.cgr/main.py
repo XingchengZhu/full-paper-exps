@@ -29,17 +29,21 @@ def load_json(settings_path):
     return param
 
 
+
 def setup_parser():
     parser = argparse.ArgumentParser(description='Reproduce of multiple continual learning algorthms.')
     parser.add_argument('--config', type=str, default='./exps/finetune.json',
                         help='Json file of settings.')
     
-    # --- 新增：支持从命令行传入需要遍历的超参数 ---
+    # --- 新增 Grid Search 超参数 ---
     parser.add_argument('--beta_cvae', type=float, help='weight for CVAE loss')
     parser.add_argument('--lambda_mmd_base', type=float, help='base weight for MMD loss')
     parser.add_argument('--D_rff', type=int, help='dimension for RFF')
-    # 支持传入多个 seed，例如: --seed 1993 2025
     parser.add_argument('--seed', type=int, nargs='+', help='random seeds') 
+
+    # --- 【必须新增】用于路径重定向的参数 ---
+    parser.add_argument('--ckpt_path', type=str, help='Path to load checkpoint (overrides json)')
+    parser.add_argument('--log_name', type=str, help='Name of the log folder (overrides json)')
 
     return parser
 
