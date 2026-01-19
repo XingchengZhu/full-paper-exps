@@ -135,7 +135,7 @@ class ResNet(nn.Module):
         super(ResNet, self).__init__()
 
         assert args is not None, "you should pass args to resnet"
-        if 'cifar' in args["dataset"] or args["dataset"]=='tinyimagenet':
+        if 'cifar' in args["dataset"] or args["dataset"]=='tinyimagenet' or args["dataset"] in ["baosteel","neucls","pcb"]:
             self.conv1 = nn.Sequential(nn.Conv2d(3, self.inplanes, kernel_size=3, stride=1, padding=1, bias=False),
                                        nn.BatchNorm2d(self.inplanes), nn.ReLU(inplace=True))
 
@@ -199,7 +199,7 @@ class ResNet_imagenet(nn.Module):
         self.inplanes = 64
         super(ResNet, self).__init__()
         assert args is not None, "you should pass args to resnet"
-        if 'cifar' in args["dataset"]:
+        if 'cifar' in args["dataset"] or args["dataset"] in ["baosteel","neucls","pcb"]:
             self.conv1 = nn.Sequential(nn.Conv2d(3, self.inplanes, kernel_size=3, stride=1, padding=1, bias=False),
                                        nn.BatchNorm2d(self.inplanes), nn.ReLU(inplace=True))
         elif 'imagenet' in args["dataset"]:
