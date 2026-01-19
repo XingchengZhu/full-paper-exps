@@ -7,7 +7,7 @@ JSON_DIR = f"./exps/cgr/{DATASET}/5"
 FIRST_STAGE_CONFIG = os.path.join(JSON_DIR, "first_stage.json")
 SECOND_STAGE_CONFIG = os.path.join(JSON_DIR, "second_stage.json")
 
-SEEDS = [2025, 2026, 2027]
+SEEDS = [1991, 1993, 2001, 2000, 2025, 2026, 2027]
 BETAS = [0.1, 0.5, 1.0]           
 LAMBDAS = [10.0, 50.0, 100.0]     
 RFF_DIMS = [256, 512, 1024]       
