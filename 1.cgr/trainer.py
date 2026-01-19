@@ -1,3 +1,4 @@
+#
 import sys
 import logging
 import copy
@@ -20,15 +21,28 @@ def train(args):
 def _train(args):
     init_cls = 0 if args["init_cls"] == args["increment"] else args["init_cls"]
     log_dir = args["log_dir"]
+    
+    # 保持原有的目录结构
     logs_name = "{}/{}/{}/{}/{}".format(args["model_name"], args["dataset"], init_cls, args['increment'], args["log_name"])
     logs_name = os.path.join(log_dir, logs_name)
 
     if not os.path.exists(logs_name):
         os.makedirs(logs_name)
 
+    # --- 修改：构建包含超参数的后缀 ---
+    # 检查 args 中是否有这些 key，如果有则加入到文件名中
+    hyper_suffix = ""
+    if "beta_cvae" in args:
+        hyper_suffix += "_beta{}".format(args["beta_cvae"])
+    if "lambda_mmd_base" in args:
+        hyper_suffix += "_mmd{}".format(args["lambda_mmd_base"])
+    if "D_rff" in args:
+        hyper_suffix += "_rff{}".format(args["D_rff"])
+
+    # 拼接完整文件名
     logfilename = os.path.join(
         log_dir,
-        "{}/{}/{}/{}/{}/{}_{}_{}".format(
+        "{}/{}/{}/{}/{}/{}_{}_{}{}".format( # 注意末尾增加了一个 {}
             args["model_name"],
             args["dataset"],
             init_cls,
@@ -37,8 +51,10 @@ def _train(args):
             args["prefix"],
             args["seed"],
             args["convnet_type"],
+            hyper_suffix  # 填入超参数后缀
         )
     )
+    
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(filename)s] => %(message)s",
@@ -46,6 +62,7 @@ def _train(args):
             logging.FileHandler(filename=logfilename + ".log"),
             logging.StreamHandler(sys.stdout),
         ],
+        force=True # 强制重新配置 logging，防止循环中 handler 重复累积
     )
 
     _set_random()
@@ -81,7 +98,7 @@ def _train(args):
         logging.info("CNN top1 curve: {}".format(cnn_curve["top1"]))
         logging.info("CNN top5 curve: {}".format(cnn_curve["top5"]))
 
-        # 旧写法: 只对 new / only_new / only_old  的评测
+        # 旧写法
         cnn_accy_new, nme_accy_new = model.eval_task(only_new=True)
         cnn_accy_old, nme_accy_old = model.eval_task(only_old=True)
         logging.info("Eval only_new => CNN top1: {}, NME: {}".format(
