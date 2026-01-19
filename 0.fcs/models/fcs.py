@@ -473,6 +473,7 @@ class FCS(BaseLearner):
 
         return np.concatenate(y_pred), np.concatenate(y_true)  
     
+
     def eval_task(self,only_new=False,only_old = False):
         y_pred, y_true = self._eval_cnn(self.test_loader,only_new=only_new,only_old=only_old)
 
@@ -482,7 +483,7 @@ class FCS(BaseLearner):
             y_pred, y_true = self._eval_nme(self.test_loader, self._class_means)
             nme_accy = self._evaluate(y_pred, y_true)
         elif hasattr(self, '_protos'):
-            print(len(self._protos))
+            # 移除了这里的 print(len(self._protos))
             y_pred, y_true = self._eval_nme(self.test_loader, self._protos/np.linalg.norm(self._protos,axis=1)[:,None])
             nme_accy = self._evaluate(y_pred, y_true)            
         else:

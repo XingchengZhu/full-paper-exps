@@ -67,6 +67,17 @@ class BaseLearner(object):
     def after_task(self):
         pass
 
+    # def _evaluate(self, y_pred, y_true):
+    #     ret = {}
+    #     grouped = accuracy(y_pred.T[0], y_true, self._known_classes)
+    #     ret["grouped"] = grouped
+    #     ret["top1"] = grouped["total"]
+    #     ret["top{}".format(self.topk)] = np.around(
+    #         (y_pred.T == np.tile(y_true, (self.topk, 1))).sum() * 100 / len(y_true),
+    #         decimals=2,
+    #     )
+
+    #     return ret
     def _evaluate(self, y_pred, y_true):
         ret = {}
         grouped = accuracy(y_pred.T[0], y_true, self._known_classes)
@@ -76,6 +87,38 @@ class BaseLearner(object):
             (y_pred.T == np.tile(y_true, (self.topk, 1))).sum() * 100 / len(y_true),
             decimals=2,
         )
+
+        # ================= NEW: Compute per-task accuracy =================
+        init_cls = self.args["init_cls"]
+        increment = self.args["increment"]
+        task_accs = []
+        
+        # --- Task 0 ---
+        # 范围: [0, init_cls)
+        t0_end = init_cls
+        t0_idx = np.where(np.logical_and(y_true >= 0, y_true < t0_end))[0]
+        if len(t0_idx) > 0:
+            acc = (y_pred.T[0][t0_idx] == y_true[t0_idx]).sum() * 100 / len(t0_idx)
+            task_accs.append(np.around(acc, 2))
+        else:
+            task_accs.append(0.0)
+
+        # --- Subsequent Tasks ---
+        # 范围: [init_cls, init_cls+inc), [init_cls+inc, init_cls+2*inc), ...
+        # 直到覆盖 self._total_classes
+        curr = t0_end
+        while curr < self._total_classes:
+            end = min(curr + increment, self._total_classes)
+            idx = np.where(np.logical_and(y_true >= curr, y_true < end))[0]
+            if len(idx) > 0:
+                acc = (y_pred.T[0][idx] == y_true[idx]).sum() * 100 / len(idx)
+                task_accs.append(np.around(acc, 2))
+            else:
+                task_accs.append(0.0)
+            curr = end
+            
+        ret["task_acc"] = task_accs
+        # ==================================================================
 
         return ret
 

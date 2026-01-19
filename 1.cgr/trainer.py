@@ -1,4 +1,3 @@
-#
 import sys
 import logging
 import copy
@@ -8,6 +7,7 @@ from utils.data_manager import DataManager
 from utils.toolkit import count_parameters
 import os
 import json
+import numpy as np # === NEW: Import numpy ===
 
 def train(args):
     seed_list = copy.deepcopy(args["seed"])
@@ -30,7 +30,6 @@ def _train(args):
         os.makedirs(logs_name)
 
     # --- 修改：构建包含超参数的后缀 ---
-    # 检查 args 中是否有这些 key，如果有则加入到文件名中
     hyper_suffix = ""
     if "beta_cvae" in args:
         hyper_suffix += "_beta{}".format(args["beta_cvae"])
@@ -42,7 +41,7 @@ def _train(args):
     # 拼接完整文件名
     logfilename = os.path.join(
         log_dir,
-        "{}/{}/{}/{}/{}/{}_{}_{}{}".format( # 注意末尾增加了一个 {}
+        "{}/{}/{}/{}/{}/{}_{}_{}{}".format( 
             args["model_name"],
             args["dataset"],
             init_cls,
@@ -51,7 +50,7 @@ def _train(args):
             args["prefix"],
             args["seed"],
             args["convnet_type"],
-            hyper_suffix  # 填入超参数后缀
+            hyper_suffix 
         )
     )
     
@@ -62,7 +61,7 @@ def _train(args):
             logging.FileHandler(filename=logfilename + ".log"),
             logging.StreamHandler(sys.stdout),
         ],
-        force=True # 强制重新配置 logging，防止循环中 handler 重复累积
+        force=True 
     )
 
     _set_random()
@@ -78,6 +77,13 @@ def _train(args):
     model = factory.get_model(args["model_name"], args)
 
     cnn_curve = {"top1": [], "top5": []}
+    
+    # === NEW: Initialize Accuracy Matrix ===
+    # Row i: Results after training Task i
+    # Col j: Accuracy on Task j
+    num_tasks = data_manager.nb_tasks
+    acc_matrix = np.zeros((num_tasks, num_tasks))
+    # =======================================
 
     for task in range(data_manager.nb_tasks):
         logging.info("All params: {}".format(count_parameters(model._network)))
@@ -98,7 +104,45 @@ def _train(args):
         logging.info("CNN top1 curve: {}".format(cnn_curve["top1"]))
         logging.info("CNN top5 curve: {}".format(cnn_curve["top5"]))
 
-        # 旧写法
+        # === NEW: Fill Matrix & Log Detailed Metrics ===
+        # cnn_accy["task_acc"] contains [acc_task_0, acc_task_1, ..., acc_task_current]
+        if "task_acc" in cnn_accy:
+            task_accs = cnn_accy["task_acc"]
+            for t_id, acc in enumerate(task_accs):
+                if t_id < num_tasks: # Safety check
+                    acc_matrix[task, t_id] = acc
+        
+        # Check if this is the last task
+        is_last_task = (task == data_manager.nb_tasks - 1)
+        if is_last_task:
+            logging.info("=== Final Incremental Learning Metrics ===")
+            
+            # 1. Acc of each stage (Final Accuracy per Task)
+            final_task_accs = acc_matrix[task, :task+1]
+            logging.info("1. Final Acc of each stage (Task 0 to {}): {}".format(task, final_task_accs.tolist()))
+            
+            # 2. Average Acc (Average of final task accuracies)
+            avg_acc = np.mean(final_task_accs)
+            logging.info("2. Average Acc: {:.2f}".format(avg_acc))
+            
+            # 3. Forgetting Rate
+            # Forgetting_j = max(Acc_prev_tasks, j) - Acc_final, j
+            if task > 0:
+                forgetting = []
+                for j in range(task): # Exclude current task (cannot forget what you just learned)
+                    # Best accuracy for task j in previous steps
+                    max_acc = np.max(acc_matrix[:task, j]) 
+                    curr_acc = acc_matrix[task, j]
+                    forgetting.append(max_acc - curr_acc)
+                
+                avg_forgetting = np.mean(forgetting)
+                logging.info("3. Average Forgetting Rate: {:.2f}".format(avg_forgetting))
+            else:
+                logging.info("3. Forgetting Rate: 0.00 (First Task Only)")
+            logging.info("========================================")
+        # ===============================================
+
+        # 保留原有的详细评估
         cnn_accy_new, nme_accy_new = model.eval_task(only_new=True)
         cnn_accy_old, nme_accy_old = model.eval_task(only_old=True)
         logging.info("Eval only_new => CNN top1: {}, NME: {}".format(
