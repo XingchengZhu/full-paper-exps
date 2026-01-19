@@ -1,9 +1,9 @@
-from models.fcs import FCS
+from models.cgr import CGR
 def get_model(model_name, args):
     name = model_name.lower()
 
 
-    if name == "fcs":
+    if name == "cgr":
         return FCS(args)
     else:
         assert 0

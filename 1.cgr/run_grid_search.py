@@ -7,7 +7,7 @@ lambdas = [10.0, 50.0, 100.0]     # lambda_mmd_base
 rff_dims = [256, 512, 1024]       # D_rff
 
 # 固定配置
-config_path = "./exps/fcs/cifar100/5/second_stage.json" 
+config_path = "./exps/cgr/cifar100/5/second_stage.json" 
 # 注意：第一阶段(first_stage)通常不需要这些参数，除非你的修改也影响第一阶段。
 # 如果第一阶段也需要跑，可以单独加一行命令。
 
