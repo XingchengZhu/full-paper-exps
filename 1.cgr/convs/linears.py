@@ -8,13 +8,13 @@ from torch import nn
 from torch.nn import functional as F
 
 
-class FCSSimpleLinear(nn.Module):
+class CGRSimpleLinear(nn.Module):
     '''
     Reference:
     https://github.com/pytorch/pytorch/blob/master/torch/nn/modules/linear.py
     '''
     def __init__(self, in_features, out_features, bias=True):
-        super(FCSSimpleLinear, self).__init__()
+        super(CGRSimpleLinear, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
         self.weight = nn.Parameter(torch.Tensor(out_features, in_features))

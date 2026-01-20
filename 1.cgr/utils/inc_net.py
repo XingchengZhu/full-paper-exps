@@ -10,7 +10,7 @@ from convs.ucir_cifar_resnet import resnet32 as cosine_resnet32
 from convs.ucir_resnet import resnet18 as cosine_resnet18
 from convs.ucir_resnet import resnet34 as cosine_resnet34
 from convs.ucir_resnet import resnet50 as cosine_resnet50
-from convs.linears import FCSSimpleLinear
+from convs.linears import CGRSimpleLinear
 from convs.modified_represnet import resnet18_rep, resnet34_rep
 from convs.resnet_cbam import resnet18_cbam, resnet34_cbam, resnet50_cbam
 
@@ -179,12 +179,12 @@ class BaseNet(nn.Module):
         return self
 
 ############################################################
-# ================ (4) FCSNet: 新增 CVAE 整合 =============== #
+# ================ (4) CGRNet: 新增 CVAE 整合 =============== #
 ############################################################
 
-class FCSIncrementalNet(BaseNet):
+class CGRIncrementalNet(BaseNet):
     """
-    你原有的 FCSIncrementalNet 基类，这里保留不变，也可以不写，如果你只定义 FCSNet 也行
+    你原有的 CGRIncrementalNet 基类，这里保留不变，也可以不写，如果你只定义 CGRNet 也行
     """
     def __init__(self, args, pretrained, gradcam=False):
         super().__init__(args, pretrained)
@@ -216,7 +216,7 @@ class FCSIncrementalNet(BaseNet):
         self.fc.weight.data[-increment:, :] *= gamma
 
     def generate_fc(self, in_dim, out_dim):
-        return FCSSimpleLinear(in_dim, out_dim)
+        return CGRSimpleLinear(in_dim, out_dim)
 
     def forward(self, x):
         x = self.convnet(x)
@@ -250,15 +250,15 @@ class FCSIncrementalNet(BaseNet):
             self._gradcam_hooks[0] = self.convnet.last_conv.register_backward_hook(backward_hook)
             self._gradcam_hooks[1] = self.convnet.last_conv.register_forward_hook(forward_hook)
 
-class FCSNet(FCSIncrementalNet):
+class CGRNet(CGRIncrementalNet):
     """
-    在你现有的 FCSNet 中增加一个 cvae 成员，用于生成旧类特征
+    在你现有的 CGRNet 中增加一个 cvae 成员，用于生成旧类特征
     """
     def __init__(self, args, pretrained, gradcam=False):
         super().__init__(args, pretrained, gradcam)
         self.args = args
         # 原有 transfer
-        self.transfer = FCSSimpleLinear(self.feature_dim, self.feature_dim)
+        self.transfer = CGRSimpleLinear(self.feature_dim, self.feature_dim)
         # ===== 新增: 条件 VAE =====
         # 需要在你的 config 里有 "total_classes", 用于 one-hot 维度
         self.total_classes = args.get("total_classes", 100) * 4 + 50
@@ -271,7 +271,7 @@ class FCSNet(FCSIncrementalNet):
         )
 
     def update_fc(self, num_old, num_total, num_aux):
-        fc = FCSSimpleLinear(self.feature_dim, num_total+num_aux)
+        fc = CGRSimpleLinear(self.feature_dim, num_total+num_aux)
         if self.fc is not None:
             weight = copy.deepcopy(self.fc.weight.data)
             bias = copy.deepcopy(self.fc.bias.data)
@@ -280,7 +280,7 @@ class FCSNet(FCSIncrementalNet):
         del self.fc
         self.fc = fc
 
-        transfer = FCSSimpleLinear(self.feature_dim, self.feature_dim)
+        transfer = CGRSimpleLinear(self.feature_dim, self.feature_dim)
         transfer.weight = nn.Parameter(torch.eye(self.feature_dim))
         transfer.bias = nn.Parameter(torch.zeros(self.feature_dim))
         del self.transfer
