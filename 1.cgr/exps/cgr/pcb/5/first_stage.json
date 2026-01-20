@@ -3,7 +3,7 @@
     "dataset": "pcb",
     "memory_size": 0,
     "shuffle": true,
-    "init_cls": 1,
+    "init_cls": 5,
     "increment": 1,
     "model_name": "cgr",
     "convnet_type": "resnet18_cbam",
