@@ -19,7 +19,7 @@ def train(args):
         _train(args)
 
 def _train(args):
-    init_cls = 0 if args["init_cls"] == args["increment"] else args["init_cls"]
+    init_cls = args["init_cls"] # 0 if args["init_cls"] == args["increment"] else args["init_cls"]
     log_dir = args["log_dir"]
     
     # 保持原有的目录结构

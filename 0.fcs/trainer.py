@@ -19,7 +19,7 @@ def train(args):
         _train(args)
 
 def _train(args):
-    init_cls = 0 if args["init_cls"] == args["increment"] else args["init_cls"]
+    init_cls = args["init_cls"] # 0 if args["init_cls"] == args["increment"] else args["init_cls"]
     log_dir = args["log_dir"]
     logs_name = "{}/{}/{}/{}/{}".format(args["model_name"], args["dataset"], init_cls, args['increment'], args["log_name"])
     logs_name = os.path.join(log_dir, logs_name)
