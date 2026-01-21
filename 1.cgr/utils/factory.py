@@ -4,6 +4,6 @@ def get_model(model_name, args):
 
 
     if name == "cgr":
-        return FCS(args)
+        return CGR(args)
     else:
         assert 0

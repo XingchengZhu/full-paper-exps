@@ -152,4 +152,122 @@ def find_classes(dir):
     class_to_idx = {classes[i]: i for i in range(len(classes))}
     return classes, class_to_idx
 
+class baosteel(iData):
+    use_path = True
     
+    train_trsf = [
+        transforms.Resize((32, 32)),
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(),
+        transforms.ColorJitter(brightness=63 / 255),
+    ]
+    
+    test_trsf = [
+        transforms.Resize((32, 32)),
+    ]
+    
+    common_trsf = [
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ]
+
+    def download_data(self):
+        
+        
+        target_dir = "baosteel"
+        
+        train_dir = os.path.join(data_root, target_dir, "train") 
+        test_dir = os.path.join(data_root, target_dir, "test") 
+
+        train_dset = datasets.ImageFolder(train_dir)
+        test_dset = datasets.ImageFolder(test_dir)
+
+        self.train_data, self.train_targets = split_images_labels(train_dset.imgs)
+        self.test_data, self.test_targets = split_images_labels(test_dset.imgs)
+        
+        num_classes = len(train_dset.classes)
+        self.class_order = np.arange(num_classes).tolist()
+
+        print(f'NEUCLS Data loaded. Classes: {num_classes}')
+        print('Train data:', len(self.train_data))
+        print('Test data:', len(self.test_data))
+
+class neucls(iData):
+    use_path = True
+    
+    train_trsf = [
+        transforms.Resize((32, 32)),
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(),
+        transforms.ColorJitter(brightness=63 / 255),
+    ]
+    
+    test_trsf = [
+        transforms.Resize((32, 32)),
+    ]
+    
+    common_trsf = [
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ]
+
+    def download_data(self):
+        
+        
+        target_dir = "neucls"
+        
+        train_dir = os.path.join(data_root, target_dir, "train") 
+        test_dir = os.path.join(data_root, target_dir, "test") 
+
+        train_dset = datasets.ImageFolder(train_dir)
+        test_dset = datasets.ImageFolder(test_dir)
+
+        self.train_data, self.train_targets = split_images_labels(train_dset.imgs)
+        self.test_data, self.test_targets = split_images_labels(test_dset.imgs)
+        
+        num_classes = len(train_dset.classes)
+        self.class_order = np.arange(num_classes).tolist()
+
+        print(f'NEUCLS Data loaded. Classes: {num_classes}')
+        print('Train data:', len(self.train_data))
+        print('Test data:', len(self.test_data))
+        
+class pcb(iData):
+    use_path = True
+    
+    train_trsf = [
+        transforms.Resize((32, 32)),
+        transforms.RandomCrop(32, padding=4),
+        transforms.RandomHorizontalFlip(),
+        transforms.ColorJitter(brightness=63 / 255),
+    ]
+    
+    test_trsf = [
+        transforms.Resize((32, 32)),
+    ]
+    
+    common_trsf = [
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ]
+
+    def download_data(self):
+        
+        
+        target_dir = "pcb"
+        
+        train_dir = os.path.join(data_root, target_dir, "train") 
+        test_dir = os.path.join(data_root, target_dir, "test") 
+
+        train_dset = datasets.ImageFolder(train_dir)
+        test_dset = datasets.ImageFolder(test_dir)
+
+        self.train_data, self.train_targets = split_images_labels(train_dset.imgs)
+        self.test_data, self.test_targets = split_images_labels(test_dset.imgs)
+        
+        num_classes = len(train_dset.classes)
+        self.class_order = np.arange(num_classes).tolist()
+
+        print(f'NEUCLS Data loaded. Classes: {num_classes}')
+        print('Train data:', len(self.train_data))
+        print('Test data:', len(self.test_data))
